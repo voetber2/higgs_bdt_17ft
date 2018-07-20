@@ -20,12 +20,12 @@ int main(){
   TMVA::Tools::Instance();                                                      
   map<string, int> Use;
 
-  TFile* in = TFile::Open("$TMPDIR/data_17feat_cuts.root"); 
-  TFile* out = TFile::Open("tmva_bdt_17feat_grad2.root", "RECREATE"); 
+  TFile* in = TFile::Open("$TMPDIR/data_17feat_pt200p.root"); 
+  TFile* out = TFile::Open("tmva_bdt_17feat_pt200p.root", "RECREATE"); 
 
   TMVA::Factory* factory = new TMVA::Factory("TMVAClassification", out, 
     "!V:!Silent:Color:DrawProgressBar:Transformations=I:AnalysisType=Classification");
-  TMVA:: DataLoader* data = new TMVA::DataLoader("data_Grad2"); 
+  TMVA:: DataLoader* data = new TMVA::DataLoader("data_pt200p"); 
 
   //Adding every variable                                                       
   data->AddVariable("s",'F');                                           
@@ -56,8 +56,8 @@ int main(){
   TTree* sigTest = (TTree*)in->Get("sigTest");                               
   TTree* bgTest = (TTree*)in->Get("bgTest"); 
 
-  Float_t sig_w = 1./(sigTrain->GetEntries() + sigTest->GetEntries());  
-  Float_t bg_w = 1./(bgTrain->GetEntries() + bgTest->GetEntries()); 
+  Float_t sig_w = 1./20.;  
+  Float_t bg_w = 1.;   
   
   data->AddSignalTree(sigTrain, sig_w, "Training"); 
   data->AddSignalTree(sigTest, sig_w, "Testing"); 
@@ -76,8 +76,8 @@ int main(){
   
   data->SetWeightExpression("weights"); 
 
-  factory->BookMethod(data, TMVA::Types::kBDT, "BDT_Grad2",                         
-    "NTrees=600:MaxDepth=6:nCuts=20:BoostType=Grad:!UseRandomisedTrees:UseYesNoLeaf");
+  factory->BookMethod(data, TMVA::Types::kBDT, "BDT_pt200p",                         
+    "NTrees=600:MaxDepth=3:nCuts=20:BoostType=Grad:!UseRandomisedTrees:UseYesNoLeaf");
 
   factory->TrainAllMethods(); 
   factory->TestAllMethods(); 

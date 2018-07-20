@@ -1,19 +1,19 @@
-#include <iostream>                                                             
-#include <vector>                                                               
-#include <cstdlib>                                                              
-                                                                                
-#include <TChain.h>                                                             
-#include <TFile.h>                                                              
-#include <TTree.h>                                                              
-#include <TString.h>                                                            
-#include <TSystem.h>                                                            
-#include <TROOT.h>                                                              
-#include <TCanvas.h>                                                            
-#include <TLegend.h>                                                            
-                                                                                
-#include <TMVA/Tools.h>                                                         
-#include <TMVA/Reader.h>                                                        
-#include <TMVA/MethodCuts.h>                                                    
+#include <iostream>         
+#include <vector>           
+#include <cstdlib>          
+                            
+#include <TChain.h>         
+#include <TFile.h>          
+#include <TTree.h>          
+#include <TString.h>        
+#include <TSystem.h>        
+#include <TROOT.h>          
+                            
+#include <TMVA/Tools.h>     
+#include <TMVA/Reader.h>    
+#include <TMVA/MethodCuts.h>
+
+#include <fstream>                                              
  
 using namespace std; 
 
@@ -22,7 +22,10 @@ int main(){
   map<string,int> Use; 
 
   TMVA::Reader* reader = new TMVA::Reader("Color:!Silent"); 
-  TFile* out = new TFile("TrainingResults_Grad_res126_129.root", "RECREATE"); 
+  TFile* out_root = new TFile("TrainingResults_Grad_res126_129.root", "RECREATE"); 
+  
+  ofstream out_txt; 
+  out_txt.open("classified_events_21_24.txt");
 
   //Putting variables into the reader
   Float_t yydr, y1dr, y2dr, ptratio, y1y, y2y, jety, s; 
@@ -66,7 +69,7 @@ int main(){
 
   //Read data 
   TFile* in = TFile::Open("/msu/data/t3work9/voetberg/tmva_input/data_17feat_cuts.root"); 
-  TFile* in2 = TFile::Open("/msu/data/t3work9/voetberg/tmva_input/17feat_pt26_29.root"); 
+  TFile* in2 = TFile::Open("/msu/data/t3work9/voetberg/tmva_input/17feat_pt21_24.root"); 
 
   cout<<"Opened read data"<<endl; 
 
@@ -162,16 +165,38 @@ int main(){
 
   cout<<"Filled Background Histogram"<<endl; 
 
+  float sig_n=0, bg_n=0; 
+  out_txt<<"Classified:"<<" "<<"Event Number:"<<" "<<"Result:"<<"\n"; 
+
   for (long i=0; i<res_entries; ++i){
     res->GetEntry(i); 
-    h_res->Fill(reader->EvaluateMVA("method")); 
-  }
     
+    float result = reader->EvaluateMVA("method"); 
+    h_res->Fill(result);
+
+    if (result>-.05){
+      sig_n+=1; 
+      out_txt<<"Signal"<<" "<< i << result << "\n"; 
+    }
+    else{
+      bg_n+=1; 
+      out_txt<<"Background"<<" "<< i << result << "\n"; 
+    }
+  }
   cout<<"Filled Response Histogram"<<endl;
-   
   
-  out->Write(); 
-  out->Close(); 
+  cout<<""<<endl; 
+  cout<<"Signal Ratio: "<<sig_n/(res_entries)<<endl; 
+  out_txt<<"Signal Ratio: "<<sig_n/(res_entries)<<"\n"; 
+
+  cout<<""<<endl; 
+  cout<<"Background Ratio: "<<bg_n/(res_entries)<<endl; 
+  out_txt<<"Background Ratio: "<<bg_n/(res_entries)<<"\n"; 
+  
+  out_root->Write(); 
+  out_root->Close();
+
+  out_txt.close();  
 
   delete reader; 
 }

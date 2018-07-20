@@ -19,4 +19,4 @@ Draw_pt\* scripts then layer these repsonses onto the Signal and Background dist
 
 [Higgs2Diphoton from Ivan](https://github.com/ivankp) 
 
-[HED from Root Tools](200~https://github.com/ivankp/root_tools)
+[HED from Root Tools](https://github.com/ivankp/root_tools)
